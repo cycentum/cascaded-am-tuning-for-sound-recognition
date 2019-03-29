@@ -1,0 +1,3 @@
+NumEpoch	1631
+BestScore	0.6609223
+Seed	1857610131

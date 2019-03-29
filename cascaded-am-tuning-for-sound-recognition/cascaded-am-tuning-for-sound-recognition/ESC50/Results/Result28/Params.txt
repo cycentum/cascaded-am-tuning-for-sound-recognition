@@ -1,0 +1,3 @@
+NumEpoch	3327
+BestScore	0.6442207
+Seed	1603203737

@@ -1,0 +1,3 @@
+NumEpoch	2591
+BestScore	0.6592942
+Seed	1394121544

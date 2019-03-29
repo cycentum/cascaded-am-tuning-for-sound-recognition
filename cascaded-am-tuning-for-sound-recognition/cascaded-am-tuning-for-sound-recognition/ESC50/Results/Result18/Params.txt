@@ -1,0 +1,3 @@
+NumEpoch	2911
+BestScore	0.6385931
+Seed	973419207

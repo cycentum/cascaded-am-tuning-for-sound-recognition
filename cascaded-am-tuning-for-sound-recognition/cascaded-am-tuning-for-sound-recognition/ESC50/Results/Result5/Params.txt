@@ -1,0 +1,3 @@
+NumEpoch	3007
+BestScore	0.6414712
+Seed	143834902

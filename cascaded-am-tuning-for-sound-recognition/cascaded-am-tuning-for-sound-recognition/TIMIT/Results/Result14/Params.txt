@@ -1,0 +1,3 @@
+NumEpoch	14367
+BestScore	0.4575736
+Seed	2098316239
