@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 
@@ -31,8 +31,8 @@ def bmf(response, freqs, filtType=None):
 		measure=np.array(measure)
 		layerMeasure.append(measure)
 	return layerMeasure
-	
-	
+
+
 def cutoff(response, freqs, thresholdFunc, filtType=None):
 	numLayer=response.shape[-2]
 	layerMeasure=[]
@@ -95,14 +95,14 @@ def compLayerMeasure(responseAmAveSyn, responseAm0Ave):
 	numChannel=response.shape[-1]
 	responseAve=response[:,0]
 	responseSyn=response[:,1]
-	
+
 	response0Ave=responseAm0Ave
 	assert response0Ave.shape[-2]==numLayer
 	assert response0Ave.shape[-1]==numChannel
-	
+
 	responseSyn[responseSyn<0.01]=np.NaN
 	responseAve[responseAve<response0Ave+0.01]=np.NaN
-	
+
 	filtType=-np.ones((3,numLayer,numChannel),int32) #low, high, band, flat
 	for tyi,ty in enumerate(("ave","syn","avesyn")):
 		if ty=="ave": response=responseAve
@@ -127,7 +127,7 @@ def compLayerMeasure(responseAmAveSyn, responseAm0Ave):
 					if hiCutoff: filt=0
 					else: filt=3
 				filtType[tyi,li,ch]=filt
-	
+
 	layerMeasure=bmf(responseAve, freqs, filtType[0])
 	layerMeasures["Yin2011_cortex_st0_me1"]=layerMeasure
 	layerMeasures["Preuss1990_MGB_st0_me0"]=layerMeasure
@@ -143,20 +143,20 @@ def compLayerMeasure(responseAmAveSyn, responseAm0Ave):
 
 	layerMeasure=cutoff(responseAve, freqs, lambda rch: np.nanmin(rch)*0.9+np.nanmax(rch)*0.1, filtType[0])
 	layerMeasures["Krishna2000_IC_st0_me3"]=layerMeasure
-	
+
 	layerMeasure=cutoff(responseAve, freqs, lambda rch: np.nanmax(rch)*0.8, filtType[0])
 	layerMeasures["Kuwada1999_SOC_st0_me1"]=layerMeasure
 	layerMeasures["ave-cutoff"]=layerMeasure
-	
+
 	layerMeasure=cutoff(responseAve, freqs, lambda rch: np.nanmax(rch)*0.5, filtType[0])
 	layerMeasures["Zhang2006_NLL_st0_me1"]=layerMeasure
-	
+
 	r=responseAve.copy()
 	layerMeasure=highestSignificant(r, freqs)
 	layerMeasures["Lu2000_cortex_st0_me0"]=layerMeasure
 	layerMeasures["Bartlett2007_MGB_st0_me0"]=layerMeasure
 	layerMeasures["Lu2001_MGB_st0_me0"]=layerMeasure
-	
+
 	layerMeasure=bmf(responseSyn, freqs, filtType[1])
 	layerMeasures["Preuss1990_MGB_st0_me1"]=layerMeasure
 	layerMeasures["Frisina1990_CN_st0_me0"]=layerMeasure
@@ -178,13 +178,13 @@ def compLayerMeasure(responseAmAveSyn, responseAm0Ave):
 	layerMeasures["Krishna2000_IC_st0_me4"]=layerMeasure
 	layerMeasures["Batra2006_NLL_st0_me1"]=layerMeasure
 	layerMeasures["Liang2002_cortex_st0_me2"]=layerMeasure
-	
+
 	layerMeasure=cutoff(responseSyn, freqs, lambda rch: np.nanmax(rch)*10**(-3/20), filtType[1])
 	layerMeasures["Joris1992_AN_st0_me0"]=layerMeasure
 	layerMeasures["JorisSmith1998_CN_st0_me0"]=layerMeasure
 	layerMeasures["JorisYin1998_CN_st0_me0"]=layerMeasure
 	layerMeasures["JorisYin1998_SOC_st0_me0"]=layerMeasure
-	
+
 	layerMeasure=cutoff(responseSyn, freqs, lambda rch: np.nanmax(rch)*0.8, filtType[1])
 	layerMeasures["Rhode1994_AN_st0_me0"]=layerMeasure
 	layerMeasures["Rhode1994_CN_st0_me0"]=layerMeasure
@@ -194,15 +194,15 @@ def compLayerMeasure(responseAmAveSyn, responseAm0Ave):
 	layerMeasures["Zhao1995_CN_st0_me0"]=layerMeasure
 	layerMeasures["Rhode1994_AN_st0_me2"]=layerMeasure
 	layerMeasures["Rhode1994_CN_st0_me2"]=layerMeasure
-	
+
 	layerMeasure=bmf(responseAve*responseSyn, freqs, filtType[2])
 	layerMeasures["Eggermont1998_cortex_st0_me0"]=layerMeasure
 	layerMeasures["MullerPreuss1986_cortex_st0_me0"]=layerMeasure
 	layerMeasures["MullerPreuss1986_IC_st0_me0"]=layerMeasure
-	
+
 	layerMeasure=cutoff(responseAve*responseSyn, freqs, lambda rch: np.nanmax(rch)*0.5, filtType[2])
 	layerMeasures["Eggermont1998_cortex_st0_me1"]=layerMeasure
-	
+
 	return layerMeasures
 
 
@@ -225,7 +225,7 @@ def makePaperRateTemp():
 	paperRateTemp[("ave","cutoff")].append("Lu2000_cortex_st0_me0")
 	paperRateTemp[("ave","cutoff")].append("Bartlett2007_MGB_st0_me0")
 	paperRateTemp[("ave","cutoff")].append("Lu2001_MGB_st0_me0")
-	
+
 	paperRateTemp[("syn","bmf")].append("Preuss1990_MGB_st0_me1")
 	paperRateTemp[("syn","bmf")].append("Frisina1990_CN_st0_me0")
 	paperRateTemp[("syn","bmf")].append("Rhode1994_CN_st0_me1")
@@ -253,18 +253,18 @@ def makePaperRateTemp():
 	paperRateTemp[("syn","cutoff")].append("Zhao1995_CN_st0_me0")
 	paperRateTemp[("syn","cutoff")].append("Rhode1994_AN_st0_me2")
 	paperRateTemp[("syn","cutoff")].append("Rhode1994_CN_st0_me2")
-	
+
 	paperRateTemp[("syn","bmf")].append("Eggermont1998_cortex_st0_me0")
 	paperRateTemp[("syn","bmf")].append("MullerPreuss1986_cortex_st0_me0")
 	paperRateTemp[("syn","bmf")].append("MullerPreuss1986_IC_st0_me0")
-	
+
 	paperRateTemp[("syn","cutoff")].append("Eggermont1998_cortex_st0_me1")
 	return paperRateTemp
 
 
 def compRegionLayerSimilarity(layerMeasures, cumulatives, numLayer, regions, numChannel):
 	validNumLower=1
-	
+
 	layerDistance={}
 	for file,layerMeasure in layerMeasures.items():
 # 		print(file, [len(meas) for li,meas in enumerate(layerMeasure)])
@@ -272,13 +272,13 @@ def compRegionLayerSimilarity(layerMeasures, cumulatives, numLayer, regions, num
 			layDis=np.array([float(len(meas)>0) for li,meas in enumerate(layerMeasure)])
 			layerDistance[tuple(file.split("-"))]=layDis
 			continue
-		
+
 		file=tuple(file.split("_"))
 		cumulative=cumulatives[file]
 		layDis=np.ones(numLayer)
 		for li,meas in enumerate(layerMeasure):
 			if len(meas)<validNumLower: continue
-			
+
 			meas=np.sort(meas)
 			values=np.log10(meas)
 			cum=np.linspace(0,1,len(values)+1)
@@ -292,20 +292,20 @@ def compRegionLayerSimilarity(layerMeasures, cumulatives, numLayer, regions, num
 				cum[index[1:-1],:]=np.NaN
 			cum=np.stack((cum[~np.isnan(cum[:,0]),0],cum[~np.isnan(cum[:,1]),1]),axis=1)
 			meas=cum
-			
+
 			values=np.sort(np.unique(np.concatenate((meas[:,0], cumulative[:,0]))))
 			values=np.linspace(values.min(),values.max(),2**12)
 			interpMeas=np.interp(values, meas[:,0], meas[:,1], 0, 1)
 			interpCumulative=np.interp(values, cumulative[:,0], cumulative[:,1], 0, 1)
 			distance=abs(interpMeas-interpCumulative).max()
-			
+
 			layDis[li]=distance
 		layerDistance[tuple(file)]=layDis
-	
+
 	nameRateTemp=makePaperRateTemp()
 	for key in nameRateTemp:
 		for i in range(len(nameRateTemp[key])): nameRateTemp[key][i]=tuple(nameRateTemp[key][i].split("_"))
-	
+
 	distance=np.empty((2,2,len(regions),numLayer))
 	for (ri,region),(rti,rateTemp),(bci,bestCut) in itertools.product(enumerate(regions),enumerate(("ave","syn")),enumerate(("bmf","cutoff"))):
 		papers=sorted(set([name[0] for name in nameRateTemp[rateTemp,bestCut] if name[1]==region]))

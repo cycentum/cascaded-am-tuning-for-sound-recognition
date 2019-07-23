@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 import itertools
@@ -114,42 +114,42 @@ def findNumEpoch(architecture, waves, trues, labels, infos, gpu_id, waveFs):
 		xp=cupy
 		cupy.cuda.Device(gpu_id).use()
 	else: xp=np
-	
+
 	valIndex=coreTestIndex(infos)
 	np.random.seed(0)
 	insIndex, devIndex=traGroupIndex(infos, 2)
 	insIndex=np.array(insIndex)
 	insLabelIndexTime=makeLabelIndexTime(insIndex, labels, trues)
-	
+
 	insLabelSize=2**2
 	devEpoch=2**5
 	convergenceEpoch=2**5*devEpoch
-	
+
 	devBatchSizeUpper=2**8
 	devSegmentSecUpper=0.1
 	devSegmentLenUpper=int(devSegmentSecUpper*waveFs)
-	
+
 	devIndex=sorted(devIndex, key=lambda i: len(waves[i]))
 	devIndex=np.array(devIndex)
 	devBatchIndex=np.array_split(devIndex, int(np.ceil(len(devIndex)/devBatchSizeUpper)))
 	devLabelSize=np.zeros(len(labels), int32)
 	for i in devIndex:
 		for li,la in enumerate(labels): devLabelSize[li]+=(trues[i]==li).sum()
-	
+
 	inputLength=totalInputLength(architecture)
-	
+
 	np.random.seed()
 	seed=np.random.randint(0, np.iinfo(int32).max)
 	np.random.seed(seed)
-	
+
 	net=Net(len(labels), architecture, functions.elu)
 	opt=optimizers.Adam(1e-4)
 # 	opt=Eve(1e-4)
 	opt.setup(net)
 	if gpu_id>=0: net.to_gpu(gpu_id)
-	
+
 	remainingInsLabelIndexTime=[np.random.permutation(lt) for lt in insLabelIndexTime]
-	
+
 	epoch=0
 	bestEpoch=0
 	epochIncorrect={}
@@ -157,7 +157,7 @@ def findNumEpoch(architecture, waves, trues, labels, infos, gpu_id, waveFs):
 		for li,lit in enumerate(remainingInsLabelIndexTime):
 			if len(lit)<insLabelSize: remainingInsLabelIndexTime[li]=np.concatenate((lit, np.random.permutation(insLabelIndexTime[li])))
 		x,tr=makeInpTru(labels, insLabelSize, inputLength, remainingInsLabelIndexTime, waves, trues)
-		
+
 		x=x[:,newaxis,:,newaxis]
 		x=xp.asarray(x)
 		x=Variable(x)
@@ -171,7 +171,7 @@ def findNumEpoch(architecture, waves, trues, labels, infos, gpu_id, waveFs):
 		e.unchain_backward()
 		opt.update()
 # 		opt.update(loss=e.data)
-		
+
 		if epoch%devEpoch!=devEpoch-1:
 			epoch+=1
 			continue
@@ -191,64 +191,64 @@ def findNumEpoch(architecture, waves, trues, labels, infos, gpu_id, waveFs):
 							w=waves[wi][t0:t1]
 							x[xi, :len(w)]=w
 						if len(waves[wi])>t0: tr[xi, :len(w)]=trues[wi][t0:t1]
-						
+
 					x=x[:,newaxis,:,newaxis]
 					x=xp.asarray(x)
 					x=Variable(x)
 					x=net(x, False)
 					x.unchain_backward()
-					
+
 					x=xp.argmax(x.data, axis=1)
 					tr=tr[...,newaxis]
 					tr=xp.asarray(tr)
 					for li,la in enumerate(labels): incorrect[li]+=(x[tr==li]!=li).sum()
-	
+
 			net.reset()
 			if cupy is not None: incorrect=cupy.asnumpy(incorrect)
 			incorrect=(incorrect/devLabelSize).mean()
 			print("epoch", epoch, "incorrect", incorrect)
-			
+
 			if len(epochIncorrect)==0 or incorrect<min([epochIncorrect[ep] for ep in epochIncorrect]): bestEpoch=epoch
 			epochIncorrect[epoch]=incorrect
 			epoch+=1
-	
+
 	devEpochs=np.array(sorted(epochIncorrect), int32)
 	epochIncorrect=np.array([epochIncorrect[ep] for ep in devEpochs])
 	bestIncorrect=epochIncorrect.min()
-	
+
 	return bestEpoch, bestIncorrect, seed
-	
+
 
 def train(architecture, waves, trues, labels, infos, gpu_id, waveFs, numEpoch, seed):
 	if cupy is not None and gpu_id>=0:
 		xp=cupy
 		cupy.cuda.Device(gpu_id).use()
 	else: xp=np
-	
+
 	valIndex=coreTestIndex(infos)
 	np.random.seed(0)
 	insIndex,=traGroupIndex(infos, 1)
 	insIndex=np.array(insIndex)
 	insLabelIndexTime=makeLabelIndexTime(insIndex, labels, trues)
-	
+
 	insLabelSize=2**2 #la12 tot4096 ch128
-		
+
 	inputLength=totalInputLength(architecture)
-	
+
 	np.random.seed(seed)
 	net=Net(len(labels), architecture, functions.elu)
 	opt=optimizers.Adam(1e-4)
 # 	opt=Eve(1e-4)
 	opt.setup(net)
 	if gpu_id>=0: net.to_gpu(gpu_id)
-	
+
 	remainingInsLabelIndexTime=[np.random.permutation(lt) for lt in insLabelIndexTime]
 	for epoch in range(numEpoch):
 		print("Training: Epoch", epoch, "/", numEpoch)
 		for li,lit in enumerate(remainingInsLabelIndexTime):
 			if len(lit)<insLabelSize: remainingInsLabelIndexTime[li]=np.concatenate((lit, np.random.permutation(insLabelIndexTime[li])))
 		x,tr=makeInpTru(labels, insLabelSize, inputLength, remainingInsLabelIndexTime, waves, trues)
-		
+
 		x=x[:,newaxis,:,newaxis]
 		x=xp.asarray(x)
 		x=Variable(x)
@@ -262,7 +262,7 @@ def train(architecture, waves, trues, labels, infos, gpu_id, waveFs, numEpoch, s
 		e.unchain_backward()
 		opt.update()
 # 		opt.update(loss=e.data)
-			
+
 	return net
 
 
@@ -271,25 +271,25 @@ def evaluate(architecture, waves, trues, labels, infos, gpu_id, waveFs, filePara
 		xp=cupy
 		cupy.cuda.Device(gpu_id).use()
 	else: xp=np
-	
+
 	valIndex=coreTestIndex(infos)
-	
+
 	devBatchSizeUpper=2**8
 	devSegmentSecUpper=0.1
 	devSegmentLenUpper=int(devSegmentSecUpper*waveFs)
-	
+
 	devIndex=sorted(valIndex, key=lambda i: len(waves[i]))
 	devIndex=np.array(devIndex)
 	devBatchIndex=np.array_split(devIndex, int(np.ceil(len(devIndex)/devBatchSizeUpper)))
 	devLabelSize=np.zeros(len(labels), int32)
 	for i in devIndex:
 		for li,la in enumerate(labels): devLabelSize[li]+=(trues[i]==li).sum()
-		
+
 	net=Net(len(labels), architecture, functions.elu)
 	serializers.load_hdf5(fileParam, net)
 	if gpu_id>=0: net.to_gpu(gpu_id)
 	inputLength=totalInputLength(architecture)
-		
+
 	with chainer.using_config("enable_backprop", False):
 		confusion=np.zeros((len(labels),len(labels)), int32)
 		for index in devBatchIndex:
@@ -306,23 +306,23 @@ def evaluate(architecture, waves, trues, labels, infos, gpu_id, waveFs, filePara
 						w=waves[wi][t0:t1]
 						x[xi, :len(w)]=w
 					if len(waves[wi])>t0: tr[xi, :len(w)]=trues[wi][t0:t1]
-					
+
 				x=x[:,newaxis,:,newaxis]
 				x=xp.asarray(x)
 				x=Variable(x)
 				x=net(x, False)
-				
+
 				x=xp.argmax(x.data, axis=1)
 				if cupy is not None: x=cupy.asnumpy(x)
 				x=x.flatten()
 				tr=tr.flatten()
 				for xi,ti in zip(x,tr):
 					if ti>=0: confusion[ti,xi]+=1
-		
+
 		assert (np.sum(confusion, axis=1)==devLabelSize).all()
 		return confusion
-		
-		
+
+
 def compTrainingRms(waves, infos):
 	insIndex,=traGroupIndex(infos, 1)
 	insIndex=np.array(insIndex)
