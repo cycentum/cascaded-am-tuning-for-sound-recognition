@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 import pickle
@@ -50,7 +50,7 @@ def toMap(iterable, keyFunc, valueFunc=lambda x: x, forceList=False, assertSingl
 					count[k]=2
 				else: d[k].append(v)
 	return d
-			
+
 
 def loadWaves(dirSound, infos):
 	waveInfos=toMap(infos, lambda x: x[1], forceList=True)
@@ -80,7 +80,7 @@ def fade(waves, waveFs):
 			wave[:len(wave)//2]*=win[:len(wave)//2]
 			wave[len(wave)//2:]*=win[-len(wave[len(wave)//2:]):]
 	return waves
-	
+
 
 def getLabels():
 	nonHumanLabels=( #size=18

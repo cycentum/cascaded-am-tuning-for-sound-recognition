@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 import numpy as np
@@ -15,15 +15,15 @@ from PIL import Image
 
 if __name__=="__main__":
 	dirRoot=Path("./cascaded-am-tuning-for-sound-recognition")
-	
+
 	dirTimit=dirRoot/"TIMIT"
 	dirResult=dirTimit/"Results"/"Result22"
 	dirFigure=dirResult/"Figure"
-	
+
 	dirResponse=dirResult/"Response"
 	fileResponse=dirResponse/"Am"
 	with open(fileResponse, "rb") as f: response=pickle.load(f)
-	
+
 	numLayer=response.shape[-2]
 	numChannel=response.shape[-1]
 
@@ -32,17 +32,17 @@ if __name__=="__main__":
 	for tyi,ty in enumerate(("rate","temp")):
 		for li in range(numLayer):
 			r=response[...,tyi,li,:]
-			
+
 			validIndex=(~(np.isnan(r)|(r==0))).any(axis=0)
 			rValid=r[:,validIndex]
 			rValid=rValid[:,np.nanargmax(rValid, axis=0).argsort()]
-			
+
 			rValid/=np.nanmax(rValid, axis=0)
-			mi=0 
+			mi=0
 			ma=1
-			
+
 			r=np.concatenate((rValid, r[:,~validIndex]), axis=1)
-			
+
 			im=(cm((r.T-mi)/(ma-mi))*255).astype(uint8)
 			im=im.reshape(r.size, im.shape[-1])
 			im[np.isnan(r).reshape(r.size),:]=gray

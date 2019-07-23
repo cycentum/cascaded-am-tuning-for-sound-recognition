@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 import numpy as np
@@ -18,16 +18,16 @@ from utils.utils import localTimeStr
 if __name__=="__main__":
 	dirRoot=Path("./cascaded-am-tuning-for-sound-recognition")
 	gpu_id=0
-	
+
 	dirTimit=dirRoot/"TIMIT"
 	fileInfo=dirTimit/"info.txt"
 	dirSound=dirTimit/"TIMIT"
-	
+
 	infos, waves, trues, labels, waveFs=loadData(dirSound)
-	
+
 	dirResult=dirTimit/"Results"/("Result"+localTimeStr())
 	dirResult.mkdir(exist_ok=True, parents=True)
-		
+
 	#sample architecture
 	numLayer=12
 	totalInputLenUpper=4096
@@ -38,7 +38,7 @@ if __name__=="__main__":
 	fileArchitecture=dirResult/"Architecture.txt"
 	with open(fileArchitecture, "w") as f:
 		print(architectureStr(architecture), file=f, sep="\t")
-	
+
 	#find num epoch
 	numEpoch, bestScore, seed=findNumEpoch(architecture, waves, trues, labels, infos, gpu_id, waveFs)
 	print("numEpoch", numEpoch, "bestScore", bestScore, "seed", seed)
@@ -53,12 +53,12 @@ if __name__=="__main__":
 	fileParam=dirResult/"TrainedModel"
 	serializers.save_hdf5(str(fileParam), net)
 	print("Saved trained param in", str(fileParam))
-	
-	#evaluation 
+
+	#evaluation
 	confusion=evaluate(architecture, waves, trues, labels, infos, gpu_id, waveFs, fileParam)
 	fileConfusion=dirResult/"ConfusionMatrix.txt"
 	np.savetxt(fileConfusion, confusion, "%d", "\t")
-	
+
 	correct=confusion/np.sum(confusion, axis=1)
 	correct=np.mean(np.diag(correct))
 	print("Correct rate", correct)

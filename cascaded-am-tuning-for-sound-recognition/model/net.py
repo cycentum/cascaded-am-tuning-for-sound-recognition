@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 import chainer
@@ -22,33 +22,33 @@ class Net(chainer.Chain):
 		@param architecture: ((channel, input len, filter len), ...)
 		'''
 		super(Net, self).__init__()
-		
+
 		self.numLabel=numLabel
 		self.structure=architecture
 		self.act=act
-		
+
 		self.prev=[None]*len(architecture)
-		
+
 		for li,st in enumerate(architecture):
 			numChannel,inputLen,filterLen=st
-			
+
 			if li==0: inChannel=1
 			else: inChannel=architecture[li-1][0]
-			
+
 			if filterLen==1:
 				assert inputLen==1
 				dil=1
 			else:
 				assert (inputLen-1)%(filterLen-1)==0
 				dil=(inputLen-1)//(filterLen-1)
-			
+
 			conv=links.DilatedConvolution2D(inChannel, numChannel, (filterLen,1), 1, 0, (dil,1))
 			super(Net, self).add_link("c"+str(li), conv)
-		
+
 		if numLabel>0:
 			full=links.Convolution2D(architecture[-1][0], numLabel, 1)
 			super(Net, self).add_link("full", full)
-		
+
 	def __call__(self, x, train):
 		'''
 		@param x: shape=(batch, channel=1, length, 1)
@@ -70,23 +70,23 @@ class Net(chainer.Chain):
 			if p.shape[2]<prevLen: p=xp.concatenate((xp.zeros((p.shape[0], p.shape[1], prevLen-p.shape[2], p.shape[3]), float32), p), axis=2)
 			p=Variable(p)
 			x=functions.concat((p, x), axis=2)
-			
+
 			x=self["c"+str(li)](x)
 			x=self.act(x)
-		
+
 		if self.numLabel==0: return x
 		x=self.full(x)
 		return x
-	
+
 	def callSingle(self, x, train):
 		for li,st in enumerate(self.structure):
 			x=self["c"+str(li)](x)
 			x=self.act(x)
-		
+
 		if self.numLabel==0: return x
 		x=self.full(x)
 		return x
-	
+
 	def checkLength(self, x):
 		numBatch=x.shape[0]
 		for li,st in enumerate(self.structure):
@@ -95,7 +95,7 @@ class Net(chainer.Chain):
 			self.prev[li]=np.split(x.data, (x.shape[2]-(self.structure[li][1]-1), ), axis=2)[1]
 			if p is None: p=np.zeros((numBatch, 1, self.structure[li][1]-1, 1), float32)
 			x=np.concatenate((p,x),axis=2)
-			
+
 			numChannel,inputLen,filterLen=st
 			if filterLen==1: dil=1
 			else: dil=(inputLen-1)//(filterLen-1)

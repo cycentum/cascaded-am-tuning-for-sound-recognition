@@ -2,7 +2,7 @@
 # (c) 2019 Takuya KOUMURA.
 #
 # This is a part of the codes for the following paper:
-# Takuya Koumura, Hiroki Terashima, Shigeto Furukawa. "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition". bioRxiv. Cold Spring Harbor Laboratory; (2018): 308999.
+# Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533.
 ###
 
 
@@ -62,8 +62,8 @@ def bmf(response, freqs, addNan=False):
 		measure=np.array(measure)
 		layerMeasure.append(measure)
 	return layerMeasure
-	
-	
+
+
 def cutoff(response, freqs, thresholdFunc, addNan=False):
 	numLayer=response.shape[-2]
 	layerMeasure=[]
