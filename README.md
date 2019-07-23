@@ -1,7 +1,7 @@
 # cascaded-am-tuning-for-sound-recognition
 Codes for "Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition" by Takuya Koumura, Hiroki Terashima, and Shigeto Furukawa.
 ## Reference
-Koumura T, Terashima H, Furukawa S (2018) Cascaded Processing of Amplitude Modulation for Natural Sound Recognition. bioRxiv:308999. https://www.biorxiv.org/content/early/2018/04/27/308999
+Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulation for Natural Sound Recognition. J Neurosci 39(28):5517–5533. DOI: https://doi.org/10.1523/JNEUROSCI.2914-18.2019
 ## Dependencies
 - Python 3
 - Chainer https://chainer.org/
