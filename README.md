@@ -9,6 +9,11 @@ Koumura T, Terashima H, Furukawa S (2019) Cascaded Tuning to Amplitude Modulatio
 ## Datasets
 - Datasets at figshare https://doi.org/10.6084/m9.figshare.7914611
   - Unzip the 7z files, put them in a single directory named "cascaded-am-tuning-for-sound-recognition", and put this in the same directory as the codes.
+  - The directory tree should look like this:
+  ```
+  Coming soon
+  ```
+  (It may be a bit confusing because directories with the same name appears...)
 - ESC-50: Dataset for Environmental Sound Classification https://doi.org/10.7910/DVN/YDEPUT
   - Download audio files and put them in the directory "ESC50" indluced in the above dataset at figshare
   - Note: our code is built for the older version of ESC-50 with ogg format, in which folder organizations are slightly different from the current version at https://github.com/karoldvl/ESC-50
