@@ -142,7 +142,8 @@ def compLongRepresentationSingle(net, waves, xp, trimInputLen=True):
 		if trimInputLen:
 			r=r[...,inputLen-1:]
 		layerRepre[li]=r
-
+	
+	layerRepre=np.stack(layerRepre, axis=0)
 	return layerRepre
 
 
