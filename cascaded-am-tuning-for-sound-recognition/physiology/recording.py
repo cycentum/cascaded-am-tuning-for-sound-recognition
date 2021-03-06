@@ -44,6 +44,9 @@ def scaleRms(waves, targetRms):
 
 def compRepresentation(net, x):
 	'''
+	Deprecated.
+	Only used in compLongRepresentation(), which is also deprecated.
+	
 	@param x: shape=(batch, channel=1, length, 1)
 	@return repre: len=layer, [shape=(batch, channel, length, 1),... ]
 	'''
@@ -74,7 +77,27 @@ def compRepresentation(net, x):
 	return repre
 
 
+def compRepresentationSingle(net, x):
+	'''
+	@param x: shape=(batch, channel=1, length, 1)
+	@return repre: len=layer, [shape=(batch, channel, length, 1),... ]
+	'''
+	repre=[]
+	
+	for li,st in enumerate(net.structure):
+		x=net["c"+str(li)](x)
+		x=net.act(x)
+		repre.append(x.data)
+	
+	return repre
+
+
 def compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp, trimInputLen=True):
+	'''
+	Deprecated.
+	compLongRepresentationSingle() returns the same result when trimInputLen=True
+	
+	'''
 	segmentTimes=np.array_split(np.arange(waveLen), int(np.ceil(waveLen/segmentLenUpper)))
 	segmentTimes=[(x[0],x[-1]+1) for x in segmentTimes]
 	net.reset()
@@ -96,6 +119,31 @@ def compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp, trimInputLe
 		repre=repre[...,inputLen-1:]
 
 	return repre
+
+
+def compLongRepresentationSingle(net, waves, xp, trimInputLen=True):
+	net.reset()
+	
+	x=waves
+	batchSize, waveLen=x.shape
+	
+	inputLen=totalInputLength(net.structure)
+	x=np.concatenate((np.zeros((batchSize, inputLen-1), x.dtype), x), axis=1)
+	
+	x=x[:,newaxis,:,newaxis]
+	x=xp.asarray(x, float32)
+	x=Variable(x)
+	layerRepre=compRepresentationSingle(net, x)
+	for li,r in enumerate(layerRepre):
+		r=r[...,0]
+		if xp!=np: r=cupy.asnumpy(r)
+		
+		r=r[..., -waveLen:]
+		if trimInputLen:
+			r=r[...,inputLen-1:]
+		layerRepre[li]=r
+
+	return layerRepre
 
 
 def compToneAveSyn(stimSec, waveFs, fileModel, architecture, gpu_id, trainingRms):
@@ -128,7 +176,8 @@ def compToneAveSyn(stimSec, waveFs, fileModel, architecture, gpu_id, trainingRms
 				waves=np.sin(freq*2*np.pi*times)
 				waves=scaleRms(waves, trainingRms)
 				waves=waves*ba[:,newaxis] #shape=(amp, length)
-				repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp)
+# 				repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp) #compLongRepresentationSingle() returns the same result when trimInputLen=True
+				repre=compLongRepresentationSingle(net, waves, xp)
 
 				repre+=1 #elu
 				ave=repre.mean(axis=-1)
@@ -164,7 +213,8 @@ def compSilenceAveSyn(stimSec, waveFs, fileModel, architecture, gpu_id):
 		inputLen=totalInputLength(net.structure)
 
 		waves=np.zeros((1,waveLen), float32)
-		repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp) #shape=(layer, 1, channel, length)
+# 		repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp) #shape=(layer, 1, channel, length) #compLongRepresentationSingle() returns the same result when trimInputLen=True
+		repre=compLongRepresentationSingle(net, waves, xp)
 		repre+=1 #elu
 		repre=repre[:,0,:,:] #shape=(layer, channel, length)
 
@@ -219,7 +269,8 @@ def compNoiseAmAveSyn(stimSec, waveFs, fileModel, architecture, gpu_id, training
 				waves=np.random.randn(bs, waveLen)
 				waves*=(1-modDepth*np.cos(freq*2*np.pi*times))
 				waves=scaleRms(waves, trainingRms)
-				repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp)
+# 				repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp) #compLongRepresentationSingle() returns the same result when trimInputLen=True
+				repre=compLongRepresentationSingle(net, waves, xp)
 
 				repre+=1 #elu
 				ave=repre.mean(axis=-1)
@@ -268,7 +319,8 @@ def compNoiseAm0AveSyn(stimSec, waveFs, fileModel, architecture, gpu_id, trainin
 		for bi,bs in enumerate(batchSize):
 			waves=np.random.randn(bs, waveLen)
 			waves=scaleRms(waves, trainingRms)
-			repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp) #shape=(layer, batch, channel, length)
+# 			repre=compLongRepresentation(net, waves, segmentLenUpper, waveLen, xp) #shape=(layer, batch, channel, length) #compLongRepresentationSingle() returns the same result when trimInputLen=True
+			repre=compLongRepresentationSingle(net, waves, xp)
 
 			repre+=1 #elu
 			ave=repre.mean(axis=-1) #shape=(layer, batch, channel)
