@@ -85,7 +85,8 @@ def highestSignificant(response, freqs):
 
 
 def compLayerMeasure(responseAmAveSyn, responseAm0Ave):
-	freqs=np.logspace(np.log10(1), np.log10(2000), 2**8)
+# 	freqs=np.logspace(np.log10(1), np.log10(2000), 2**8)
+	freqs=np.logspace(np.log10(1), np.log10(2000), responseAmAveSyn.shape[0]) #Avoid hard-coding len(freqs)
 
 	layerMeasures={}
 
